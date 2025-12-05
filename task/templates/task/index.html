@@ -1,0 +1,74 @@
+{% extends 'task/layout.html' %}
+
+{% load static %}
+
+{% block body %}
+    {% if user.is_authenticated %}
+        <div class="container mt-4">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h3 class="mb-0">New Task</h3>
+                        </div>
+                        <div class="card-body">
+                            <form action="{% url 'task' %}" method="post">
+                                {% csrf_token %}
+                                
+                                <!-- Task Title Field -->
+                                <div class="mb-3">
+                                    <label for="taskTitle" class="form-label fw-bold"><h4>Task Title</h4></label>
+                                    <input 
+                                        type="text" 
+                                        class="form-control form-control-lg" 
+                                        id="taskTitle" 
+                                        name="title"
+                                        placeholder="Ex: Buy groceries"
+                                        required>
+                                </div>
+                                
+                                <!-- Description Field -->
+                                <div class="mb-4">
+                                    <label for="taskDescription" class="form-label fw-bold"><h4>Description</h4></label>
+                                    <textarea 
+                                        class="form-control" 
+                                        id="taskDescription" 
+                                        name="description"
+                                        rows="5" 
+                                        placeholder="Describe your task in detail..."></textarea>
+                                    <small class="form-text text-muted">Optional - Add additional details</small>
+                                </div>
+                                
+                                <!-- Buttons -->
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <button type="reset" class="btn btn-secondary">
+                                        <i class="bi bi-x-circle"></i> Cancel
+                                    </button>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-plus-circle"></i> Add Task
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% else %}
+        <div class="container mt-5">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="alert alert-warning" role="alert">
+                        <h4 class="alert-heading">Authentication Required</h4>
+                        <p><strong>Don't have an account?</strong> <a href="{% url 'register' %}" class="alert-link">Register here.</a></p>
+                        <hr>
+                        <p class="mb-0"><strong>Already have an account?</strong> <a href="{% url 'login' %}" class="alert-link">Log In here.</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    
+    <script src="{% static 'task/task.js' %}"></script>
+{% endblock %}
