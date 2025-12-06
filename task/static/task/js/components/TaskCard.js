@@ -76,7 +76,7 @@ function showToast(message, type = 'success') {
     }, type === 'success' ? 2500 : 4500);
 }
 
-// Main TaskCard Component - Optimisé Mobile
+// Main TaskCard Component - Design moderne amélioré
 function TaskCard({ task, onDelete, onToggle }) {
     const [isDeleting, setIsDeleting] = React.useState(false);
     const [isToggling, setIsToggling] = React.useState(false);
@@ -218,85 +218,104 @@ function TaskCard({ task, onDelete, onToggle }) {
     };
 
     return (
-        <div className="col-12 col-sm-6 col-lg-4 mb-4">
+        <div className="col-12 col-sm-6 col-xl-4 mb-4">
             <div 
-                className={`task-card ${taskStatus ? 'completed' : ''} ${isDeleting ? 'deleting' : ''}`}
+                className={`task-card-modern ${taskStatus ? 'completed' : ''} ${isDeleting ? 'deleting' : ''}`}
             >
-                {/* Badge de statut */}
-                {taskStatus && (
-                    <div className="task-status-badge">
-                        <i className="bi bi-check-circle-fill"></i>
-                    </div>
-                )}
-                
                 {/* Effet de complétion */}
                 {showCompletionEffect && (
                     <div className="completion-effect"></div>
                 )}
                 
-                <div className="task-card-header">
-                    {/* Toggle Switch */}
-                    <div className="task-toggle">
-                        <div className="form-check form-switch">
+                {/* Header avec toggle et badge */}
+                <div className="task-card-header-modern">
+                    <div className="d-flex justify-content-between align-items-start mb-3">
+                        {/* Toggle Switch amélioré */}
+                        <div className="custom-toggle">
                             <input
-                                className="form-check-input"
                                 type="checkbox"
-                                role="switch"
                                 id={`toggle-${task.id}`}
                                 checked={taskStatus}
                                 onChange={handleToggle}
                                 disabled={isToggling || isDeleting}
                             />
-                            <label className="form-check-label" htmlFor={`toggle-${task.id}`}>
-                                {taskStatus ? 'Done' : 'Pending'}
+                            <label htmlFor={`toggle-${task.id}`}>
+                                <div className="toggle-slider">
+                                    <div className="toggle-icon">
+                                        {taskStatus ? '✓' : ''}
+                                    </div>
+                                </div>
                             </label>
+                        </div>
+                        
+                        {/* Badge de statut */}
+                        <div className={`status-badge ${taskStatus ? 'completed' : 'pending'}`}>
+                            {taskStatus ? (
+                                <>
+                                    <i className="bi bi-check-circle-fill"></i>
+                                    <span>Done</span>
+                                </>
+                            ) : (
+                                <>
+                                    <i className="bi bi-clock"></i>
+                                    <span>Pending</span>
+                                </>
+                            )}
                         </div>
                     </div>
                     
-                    {/* Titre */}
-                    <h5 className="task-title">
+                    {/* Titre avec icône */}
+                    <h5 className="task-title-modern">
+                        <i className="bi bi-bookmark-fill title-icon"></i>
                         {task.title}
                     </h5>
                     
-                    {/* Date */}
-                    <div className="task-date">
-                        <i className="bi bi-calendar3"></i>
+                    {/* Date avec design amélioré */}
+                    <div className="task-date-modern">
+                        <i className="bi bi-calendar-event"></i>
                         <span>{formatDate(task.created_at)}</span>
                     </div>
                 </div>
 
-                {/* Description */}
-                <div className="task-description">
+                {/* Description avec scroll */}
+                <div className="task-description-modern">
                     {task.description ? (
                         <p>{task.description}</p>
                     ) : (
-                        <p className="text-muted fst-italic">No description</p>
+                        <p className="no-description">
+                            <i className="bi bi-file-text"></i> No description provided
+                        </p>
                     )}
                 </div>
 
-                {/* Actions */}
-                <div className="task-actions">
+                {/* Divider */}
+                <div className="task-divider"></div>
+
+                {/* Actions avec design moderne */}
+                <div className="task-actions-modern">
                     <button 
-                        className={`btn-task btn-edit ${taskStatus ? 'btn-success' : 'btn-primary'}`}
+                        className="btn-action btn-edit-modern"
                         onClick={handleEdit}
                         disabled={isDeleting || isToggling}
+                        title="Edit task"
                     >
-                        <i className="bi bi-pencil"></i>
+                        <i className="bi bi-pencil-square"></i>
                         <span>Edit</span>
                     </button>
                     <button 
-                        className="btn-task btn-delete"
+                        className="btn-action btn-delete-modern"
                         onClick={handleDelete}
                         disabled={isDeleting || isToggling}
+                        title="Delete task"
                     >
                         {isDeleting ? (
                             <>
                                 <span className="spinner-border spinner-border-sm"></span>
-                                <span>Deleting...</span>
+                                <span>Deleting</span>
                             </>
                         ) : (
                             <>
-                                <i className="bi bi-trash"></i>
+                                <i className="bi bi-trash3"></i>
                                 <span>Delete</span>
                             </>
                         )}
@@ -313,223 +332,326 @@ if (typeof window !== 'undefined') {
     window.showToast = showToast;
 }
 
-// Styles CSS optimisés pour mobile
+// Styles CSS modernes et proportionnés
 const cardStyles = `
-/* === CARD PRINCIPALE === */
-.task-card {
+/* === CARD PRINCIPALE - DESIGN MODERNE === */
+.task-card-modern {
     background: white;
-    border-radius: 16px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    padding: 1.25rem;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    padding: 1.75rem;
     height: 100%;
+    min-height: 320px;
+    max-height: 450px;
     display: flex;
     flex-direction: column;
     position: relative;
     overflow: hidden;
-    transition: all 0.3s ease;
-    border: 2px solid transparent;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid #f1f5f9;
 }
 
-.task-card.completed {
+.task-card-modern:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+    border-color: #e2e8f0;
+}
+
+.task-card-modern.completed {
     background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
     border-color: #86efac;
 }
 
-.task-card.deleting {
-    opacity: 0.5;
+.task-card-modern.completed:hover {
+    box-shadow: 0 12px 40px rgba(34, 197, 94, 0.15);
+}
+
+.task-card-modern.deleting {
+    opacity: 0.4;
     pointer-events: none;
+    transform: scale(0.95);
 }
 
-/* === HEADER === */
-.task-card-header {
-    margin-bottom: 1rem;
+/* === HEADER MODERNE === */
+.task-card-header-modern {
+    margin-bottom: 1.25rem;
 }
 
-/* Toggle Switch */
-.task-toggle {
-    margin-bottom: 1rem;
+/* Toggle Switch personnalisé */
+.custom-toggle {
+    position: relative;
 }
 
-.task-toggle .form-check {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    min-height: auto;
+.custom-toggle input[type="checkbox"] {
+    display: none;
 }
 
-.task-toggle .form-check-input {
-    width: 3rem;
-    height: 1.5rem;
+.custom-toggle label {
+    display: block;
+    width: 60px;
+    height: 32px;
+    background: #e2e8f0;
+    border-radius: 50px;
     cursor: pointer;
-    margin: 0;
-    flex-shrink: 0;
+    position: relative;
+    transition: all 0.3s ease;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.task-toggle .form-check-input:checked {
-    background-color: #22c55e;
-    border-color: #22c55e;
+.custom-toggle input:checked + label {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
 }
 
-.task-toggle .form-check-label {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: #64748b;
-    margin: 0;
-    cursor: pointer;
-}
-
-.task-card.completed .form-check-label {
-    color: #16a34a;
-}
-
-/* Titre */
-.task-title {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #1e293b;
-    margin: 0 0 0.75rem 0;
-    line-height: 1.4;
-    word-wrap: break-word;
-}
-
-.task-card.completed .task-title {
-    color: #16a34a;
-    text-decoration: line-through;
-    opacity: 0.8;
-}
-
-/* Date */
-.task-date {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.875rem;
-    color: #64748b;
-}
-
-.task-date i {
-    font-size: 0.875rem;
-}
-
-/* === DESCRIPTION === */
-.task-description {
-    flex: 1;
-    margin-bottom: 1rem;
-    overflow: hidden;
-}
-
-.task-description p {
-    font-size: 0.9375rem;
-    line-height: 1.6;
-    color: #475569;
-    margin: 0;
-    display: -webkit-box;
-    -webkit-line-clamp: 4;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-.task-card.completed .task-description p {
-    color: #16a34a;
-    text-decoration: line-through;
-    opacity: 0.7;
-}
-
-/* === ACTIONS === */
-.task-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.75rem;
-    margin-top: auto;
-}
-
-.btn-task {
+.toggle-slider {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 26px;
+    height: 26px;
+    background: white;
+    border-radius: 50%;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    padding: 0.75rem;
-    border: none;
-    border-radius: 10px;
-    font-size: 0.9375rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    min-height: 44px;
 }
 
-.btn-task:disabled {
+.custom-toggle input:checked + label .toggle-slider {
+    transform: translateX(28px);
+}
+
+.toggle-icon {
+    font-size: 14px;
+    font-weight: bold;
+    color: #22c55e;
+    transition: all 0.3s ease;
+}
+
+.custom-toggle input:disabled + label {
     opacity: 0.5;
     cursor: not-allowed;
 }
 
-.btn-task i {
-    font-size: 1rem;
+/* Badge de statut moderne */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.875rem;
+    border-radius: 50px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
 }
 
-/* Bouton Edit */
-.btn-edit {
-    background: #3b82f6;
-    color: white;
+.status-badge.pending {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    color: #92400e;
+    border: 1px solid #fbbf24;
 }
 
-.btn-edit:hover:not(:disabled) {
-    background: #2563eb;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+.status-badge.completed {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    color: #065f46;
+    border: 1px solid #34d399;
 }
 
-.btn-edit.btn-success {
-    background: #22c55e;
+.status-badge i {
+    font-size: 0.875rem;
 }
 
-.btn-edit.btn-success:hover:not(:disabled) {
-    background: #16a34a;
-    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
+/* Titre moderne */
+.task-title-modern {
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 0.875rem 0;
+    line-height: 1.4;
+    word-wrap: break-word;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.625rem;
 }
 
-/* Bouton Delete */
-.btn-delete {
-    background: #ef4444;
-    color: white;
+.title-icon {
+    color: #3b82f6;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+    margin-top: 0.125rem;
 }
 
-.btn-delete:hover:not(:disabled) {
-    background: #dc2626;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+.task-card-modern.completed .task-title-modern {
+    color: #16a34a;
 }
 
-/* === BADGE DE STATUT === */
-.task-status-badge {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    width: 32px;
-    height: 32px;
-    background: #22c55e;
-    border-radius: 50%;
+.task-card-modern.completed .title-icon {
+    color: #22c55e;
+}
+
+/* Date moderne */
+.task-date-modern {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem 0.75rem;
+    background: #f8fafc;
+    border-radius: 8px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+}
+
+.task-date-modern i {
+    font-size: 0.875rem;
+    color: #94a3b8;
+}
+
+/* === DESCRIPTION MODERNE === */
+.task-description-modern {
+    flex: 1;
+    margin-bottom: 1.25rem;
+    overflow-y: auto;
+    max-height: 120px;
+    padding-right: 0.5rem;
+}
+
+/* Scrollbar personnalisée */
+.task-description-modern::-webkit-scrollbar {
+    width: 6px;
+}
+
+.task-description-modern::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 10px;
+}
+
+.task-description-modern::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+.task-description-modern::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+.task-description-modern p {
+    font-size: 0.9375rem;
+    line-height: 1.65;
+    color: #475569;
+    margin: 0;
+}
+
+.task-description-modern .no-description {
+    color: #94a3b8;
+    font-style: italic;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.task-card-modern.completed .task-description-modern p {
+    color: #16a34a;
+    opacity: 0.85;
+}
+
+/* === DIVIDER === */
+.task-divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, #e2e8f0, transparent);
+    margin: 0 0 1.25rem 0;
+}
+
+/* === ACTIONS MODERNES === */
+.task-actions-modern {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.875rem;
+}
+
+.btn-action {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
-    font-size: 1rem;
-    z-index: 2;
-    animation: badgePop 0.4s ease-out;
+    gap: 0.5rem;
+    padding: 0.875rem 1rem;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    min-height: 48px;
+    position: relative;
+    overflow: hidden;
 }
 
-@keyframes badgePop {
-    0% {
-        transform: scale(0);
-        opacity: 0;
-    }
-    50% {
-        transform: scale(1.2);
-    }
-    100% {
-        transform: scale(1);
-        opacity: 1;
-    }
+.btn-action::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn-action:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.btn-action:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-action i {
+    font-size: 1.125rem;
+    z-index: 1;
+}
+
+.btn-action span {
+    z-index: 1;
+}
+
+/* Bouton Edit */
+.btn-edit-modern {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.btn-edit-modern:hover:not(:disabled) {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+}
+
+.btn-edit-modern:active:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+/* Bouton Delete */
+.btn-delete-modern {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.btn-delete-modern:hover:not(:disabled) {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+}
+
+.btn-delete-modern:active:not(:disabled) {
+    transform: translateY(-1px);
 }
 
 /* === EFFET DE COMPLÉTION === */
@@ -539,16 +661,16 @@ const cardStyles = `
     left: 0;
     right: 0;
     bottom: 0;
-    background: radial-gradient(circle at center, rgba(34, 197, 94, 0.3), transparent);
-    z-index: 1;
-    animation: completionPulse 0.8s ease-out;
+    background: radial-gradient(circle at center, rgba(34, 197, 94, 0.4), transparent);
+    z-index: 10;
+    animation: completionPulse 1s ease-out;
     pointer-events: none;
 }
 
 @keyframes completionPulse {
     0% {
         opacity: 0;
-        transform: scale(0.8);
+        transform: scale(0.5);
     }
     50% {
         opacity: 1;
@@ -556,7 +678,7 @@ const cardStyles = `
     }
     100% {
         opacity: 0;
-        transform: scale(1.2);
+        transform: scale(1.5);
     }
 }
 
@@ -573,41 +695,58 @@ const cardStyles = `
 }
 
 .toast {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
     border-radius: 12px;
     border: none;
 }
 
 /* === RESPONSIVE === */
 @media (max-width: 576px) {
-    .task-card {
-        padding: 1rem;
+    .task-card-modern {
+        padding: 1.5rem;
+        min-height: 300px;
     }
     
-    .task-title {
+    .task-title-modern {
+        font-size: 1.25rem;
+    }
+    
+    .title-icon {
         font-size: 1.125rem;
     }
     
-    .task-description p {
-        font-size: 0.875rem;
-        -webkit-line-clamp: 3;
+    .task-description-modern {
+        max-height: 100px;
     }
     
-    .btn-task {
+    .task-description-modern p {
         font-size: 0.875rem;
-        padding: 0.625rem;
     }
     
-    .btn-task span {
+    .btn-action {
+        font-size: 0.875rem;
+        padding: 0.75rem;
+    }
+    
+    .btn-action span {
         display: none;
     }
     
-    .btn-task i {
-        font-size: 1.125rem;
+    .btn-action i {
+        font-size: 1.25rem;
     }
     
-    .task-actions {
-        gap: 0.5rem;
+    .task-actions-modern {
+        gap: 0.625rem;
+    }
+    
+    .status-badge {
+        padding: 0.375rem 0.625rem;
+        font-size: 0.75rem;
+    }
+    
+    .status-badge span {
+        display: none;
     }
     
     .toast {
@@ -620,15 +759,35 @@ const cardStyles = `
 }
 
 @media (min-width: 577px) and (max-width: 768px) {
-    .task-card {
-        padding: 1.125rem;
+    .task-card-modern {
+        padding: 1.625rem;
+    }
+    
+    .task-title-modern {
+        font-size: 1.3rem;
+    }
+}
+
+@media (min-width: 1200px) and (max-width: 1399px) {
+    .task-card-modern {
+        min-height: 340px;
+    }
+}
+
+@media (min-width: 1400px) {
+    .task-card-modern {
+        min-height: 350px;
     }
 }
 
 /* Amélioration tactile */
 @media (hover: none) {
-    .btn-task:active:not(:disabled) {
+    .btn-action:active:not(:disabled) {
         transform: scale(0.95);
+    }
+    
+    .task-card-modern:active {
+        transform: scale(0.98);
     }
 }
 
@@ -636,7 +795,7 @@ const cardStyles = `
 @keyframes cardFadeIn {
     from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(30px);
     }
     to {
         opacity: 1;
@@ -644,17 +803,58 @@ const cardStyles = `
     }
 }
 
-.task-card {
-    animation: cardFadeIn 0.4s ease-out;
+.task-card-modern {
+    animation: cardFadeIn 0.5s ease-out backwards;
 }
 
 /* Stagger animation pour les cartes */
-.task-card:nth-child(1) { animation-delay: 0s; }
-.task-card:nth-child(2) { animation-delay: 0.1s; }
-.task-card:nth-child(3) { animation-delay: 0.2s; }
-.task-card:nth-child(4) { animation-delay: 0.3s; }
-.task-card:nth-child(5) { animation-delay: 0.4s; }
-.task-card:nth-child(6) { animation-delay: 0.5s; }
+.task-card-modern:nth-child(1) { animation-delay: 0s; }
+.task-card-modern:nth-child(2) { animation-delay: 0.1s; }
+.task-card-modern:nth-child(3) { animation-delay: 0.2s; }
+.task-card-modern:nth-child(4) { animation-delay: 0.3s; }
+.task-card-modern:nth-child(5) { animation-delay: 0.4s; }
+.task-card-modern:nth-child(6) { animation-delay: 0.5s; }
+.task-card-modern:nth-child(7) { animation-delay: 0.6s; }
+.task-card-modern:nth-child(8) { animation-delay: 0.7s; }
+.task-card-modern:nth-child(9) { animation-delay: 0.8s; }
+
+/* === ÉTATS DE FOCUS POUR ACCESSIBILITÉ === */
+.custom-toggle input:focus + label {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+.btn-action:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+/* === DARK MODE READY === */
+@media (prefers-color-scheme: dark) {
+    .task-card-modern {
+        background: #1e293b;
+        border-color: #334155;
+        color: #f1f5f9;
+    }
+    
+    .task-card-modern:hover {
+        border-color: #475569;
+    }
+    
+    .task-title-modern {
+        color: #f1f5f9;
+    }
+    
+    .task-description-modern p {
+        color: #cbd5e1;
+    }
+    
+    .task-date-modern {
+        background: #0f172a;
+        border-color: #334155;
+        color: #94a3b8;
+    }
+}
 `;
 
 // Injectez les styles

@@ -144,5 +144,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Custom user model
 AUTH_USER_MODEL = "task.User"
 
+# À la fin du fichier settings.py
+
+# URL de redirection pour le login
+LOGIN_URL = 'login'  # ← AJOUTEZ CETTE LIGNE
+LOGIN_REDIRECT_URL = 'index'  # ← OPTIONNEL : redirection après login réussi
+LOGOUT_REDIRECT_URL = 'index'  # ← OPTIONNEL : redirection après logout
+
 # CORS (pour dev uniquement)
 CORS_ALLOW_ALL_ORIGINS = True
