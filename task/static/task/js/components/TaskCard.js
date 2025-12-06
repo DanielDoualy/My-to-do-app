@@ -76,10 +76,9 @@ function showToast(message, type = 'success') {
     }, type === 'success' ? 2500 : 4500);
 }
 
-// Main TaskCard Component - Toggle parfaitement ajusté
+// Main TaskCard Component - Optimisé Mobile
 function TaskCard({ task, onDelete, onToggle }) {
     const [isDeleting, setIsDeleting] = React.useState(false);
-    const [isHovered, setIsHovered] = React.useState(false);
     const [isToggling, setIsToggling] = React.useState(false);
     const [taskStatus, setTaskStatus] = React.useState(task.status || false);
     const [showCompletionEffect, setShowCompletionEffect] = React.useState(false);
@@ -130,15 +129,13 @@ function TaskCard({ task, onDelete, onToggle }) {
             if (response.ok) {
                 const data = await response.json();
                 if (data.success && onDelete) {
-                    showToast(`Task "${task.title}" deleted successfully`, 'success');
+                    showToast(`Task deleted successfully`, 'success');
                     onDelete(task.id);
                 } else {
                     showToast(data.error || 'Delete failed', 'error');
                     setIsDeleting(false);
                 }
             } else {
-                const errorText = await response.text();
-                console.error('Delete failed:', errorText);
                 showToast('Failed to delete task', 'error');
                 setIsDeleting(false);
             }
@@ -185,19 +182,19 @@ function TaskCard({ task, onDelete, onToggle }) {
                         onToggle(task.id, newStatus);
                     }
                     const action = newStatus ? 'completed' : 'marked as pending';
-                    showToast(`Task "${task.title}" ${action}`, 'success');
+                    showToast(`Task ${action}`, 'success');
                 } else {
-                    showToast('Failed to update task status', 'error');
-                    setTaskStatus(!newStatus); // Revert visual state
+                    showToast('Failed to update task', 'error');
+                    setTaskStatus(!newStatus);
                 }
             } else {
-                showToast('Failed to update task status', 'error');
-                setTaskStatus(!newStatus); // Revert visual state
+                showToast('Failed to update task', 'error');
+                setTaskStatus(!newStatus);
             }
         } catch (error) {
             console.error('Toggle error:', error);
-            showToast('Network error. Please try again.', 'error');
-            setTaskStatus(!newStatus); // Revert visual state
+            showToast('Network error', 'error');
+            setTaskStatus(!newStatus);
         } finally {
             setIsToggling(false);
         }
@@ -213,272 +210,97 @@ function TaskCard({ task, onDelete, onToggle }) {
             return date.toLocaleDateString('en-US', { 
                 month: 'short', 
                 day: 'numeric',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
+                year: 'numeric'
             });
         } catch {
             return dateString;
         }
     };
 
-    // Classes conditionnelles basées sur le statut
-    const cardClasses = `
-        card 
-        h-100 
-        shadow 
-        border-0 
-        ${isHovered ? 'shadow-lg' : ''}
-        ${isDeleting ? 'opacity-50' : ''}
-        ${taskStatus ? 'border-success border-3 bg-success bg-opacity-5' : 'border-1'}
-        ${showCompletionEffect ? 'completion-effect' : ''}
-        transition-all
-        position-relative
-        overflow-hidden
-        task-card-item
-        ${taskStatus ? 'completed-task' : 'active-task'}
-    `.trim();
-
-    const cardStyle = {
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        transform: isHovered ? 'translateY(-6px) scale(1.02)' : 'translateY(0) scale(1)',
-        opacity: isDeleting ? 0.5 : 1,
-        pointerEvents: isDeleting ? 'none' : 'auto',
-        borderRadius: '15px',
-        borderWidth: taskStatus ? '3px' : '1px',
-        position: 'relative'
-    };
-
-    const overlayStyle = {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        height: '6px',
-        background: taskStatus ? 
-            'linear-gradient(90deg, #198754, #20c997)' : 
-            'linear-gradient(90deg, #0d6efd, #0dcaf0)',
-        opacity: isHovered ? 1 : 0.9,
-        transition: 'all 0.3s ease',
-        zIndex: 1
-    };
-
     return (
-        <div className="col-12 col-md-6 col-xl-4 mb-4">
+        <div className="col-12 col-sm-6 col-lg-4 mb-4">
             <div 
-                className={cardClasses}
-                style={cardStyle}
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
+                className={`task-card ${taskStatus ? 'completed' : ''} ${isDeleting ? 'deleting' : ''}`}
             >
-                {/* Barre supérieure colorée */}
-                <div style={overlayStyle}></div>
-                
-                {/* Effet de complétion visuel */}
-                {showCompletionEffect && (
-                    <div className="completion-overlay"></div>
-                )}
-                
-                {/* Badge de statut - seulement visible quand complété */}
+                {/* Badge de statut */}
                 {taskStatus && (
-                    <div className="position-absolute top-0 end-0 m-3 z-2 completion-badge">
-                        <span className="badge bg-success rounded-pill shadow px-3 py-2 d-flex align-items-center">
-                            <i className="bi bi-check2-circle me-2"></i>
-                            Completed
-                        </span>
+                    <div className="task-status-badge">
+                        <i className="bi bi-check-circle-fill"></i>
                     </div>
                 )}
                 
-                <div className="card-body p-4 d-flex flex-column h-100 position-relative z-2">
-                    {/* En-tête avec toggle centré */}
-                    <div className="mb-4">
-                        <div className="d-flex align-items-center justify-content-between mb-3">
-                            <div className="flex-grow-1 me-4">
-                                <h5 
-                                    className="card-title mb-2 fw-bold"
-                                    style={{
-                                        fontSize: '1.35rem',
-                                        lineHeight: '1.3',
-                                        textDecoration: taskStatus ? 'line-through' : 'none',
-                                        color: taskStatus ? '#6c757d' : 'var(--bs-dark)',
-                                        opacity: taskStatus ? 0.8 : 1
-                                    }}
-                                >
-                                    {task.title}
-                                </h5>
-                                
-                                <div className="d-flex align-items-center text-muted">
-                                    <i className="bi bi-clock me-2"></i>
-                                    <small>{formatDate(task.created_at)}</small>
-                                    <span className="mx-2">•</span>
-                                    <small className="text-muted">ID: #{task.id}</small>
-                                </div>
-                            </div>
-                            
-                            {/* Toggle Switch - Design amélioré */}
-                            <div className="flex-shrink-0 toggle-container">
-                                <div className="d-flex flex-column align-items-center">
-                                    <div className="toggle-wrapper position-relative">
-                                        <div 
-                                            className="form-check form-switch"
-                                            style={{
-                                                transform: 'scale(1.4)',
-                                                transformOrigin: 'center'
-                                            }}
-                                        >
-                                            <input
-                                                className="form-check-input"
-                                                type="checkbox"
-                                                role="switch"
-                                                id={`toggle-${task.id}`}
-                                                checked={taskStatus}
-                                                onChange={handleToggle}
-                                                disabled={isToggling}
-                                                style={{
-                                                    cursor: isToggling ? 'not-allowed' : 'pointer',
-                                                    width: '3.2em',
-                                                    height: '1.7em',
-                                                    marginTop: '0.1em'
-                                                }}
-                                            />
-                                        </div>
-                                        {isToggling && (
-                                            <div className="toggle-spinner">
-                                                <span className="spinner-border spinner-border-sm"></span>
-                                            </div>
-                                        )}
-                                    </div>
-                                    <small className="text-muted mt-2 fw-medium toggle-label">
-                                        {taskStatus ? 'COMPLETED' : 'PENDING'}
-                                    </small>
-                                </div>
-                            </div>
+                {/* Effet de complétion */}
+                {showCompletionEffect && (
+                    <div className="completion-effect"></div>
+                )}
+                
+                <div className="task-card-header">
+                    {/* Toggle Switch */}
+                    <div className="task-toggle">
+                        <div className="form-check form-switch">
+                            <input
+                                className="form-check-input"
+                                type="checkbox"
+                                role="switch"
+                                id={`toggle-${task.id}`}
+                                checked={taskStatus}
+                                onChange={handleToggle}
+                                disabled={isToggling || isDeleting}
+                            />
+                            <label className="form-check-label" htmlFor={`toggle-${task.id}`}>
+                                {taskStatus ? 'Done' : 'Pending'}
+                            </label>
                         </div>
                     </div>
+                    
+                    {/* Titre */}
+                    <h5 className="task-title">
+                        {task.title}
+                    </h5>
+                    
+                    {/* Date */}
+                    <div className="task-date">
+                        <i className="bi bi-calendar3"></i>
+                        <span>{formatDate(task.created_at)}</span>
+                    </div>
+                </div>
 
-                    {/* Description */}
-                    <div className="flex-grow-1 mb-4">
-                        {task.description ? (
-                            <div 
-                                className={`rounded-3 p-3 description-scroll ${taskStatus ? 'bg-success bg-opacity-10' : 'bg-light bg-opacity-50'}`}
-                                style={{
-                                    height: '100%',
-                                    minHeight: '120px',
-                                    maxHeight: '220px',
-                                    overflowY: 'auto'
-                                }}
-                            >
-                                <div className="d-flex">
-                                    <i className={`bi ${taskStatus ? 'bi-check-circle text-success' : 'bi-text-paragraph text-primary'} me-3 mt-1`}></i>
-                                    <p 
-                                        className="card-text mb-0 flex-grow-1"
-                                        style={{
-                                            lineHeight: '1.7',
-                                            fontSize: '1rem',
-                                            color: taskStatus ? '#6c757d' : '#495057',
-                                            textDecoration: taskStatus ? 'line-through' : 'none',
-                                            opacity: taskStatus ? 0.8 : 1
-                                        }}
-                                    >
-                                        {task.description}
-                                    </p>
-                                </div>
-                            </div>
+                {/* Description */}
+                <div className="task-description">
+                    {task.description ? (
+                        <p>{task.description}</p>
+                    ) : (
+                        <p className="text-muted fst-italic">No description</p>
+                    )}
+                </div>
+
+                {/* Actions */}
+                <div className="task-actions">
+                    <button 
+                        className={`btn-task btn-edit ${taskStatus ? 'btn-success' : 'btn-primary'}`}
+                        onClick={handleEdit}
+                        disabled={isDeleting || isToggling}
+                    >
+                        <i className="bi bi-pencil"></i>
+                        <span>Edit</span>
+                    </button>
+                    <button 
+                        className="btn-task btn-delete"
+                        onClick={handleDelete}
+                        disabled={isDeleting || isToggling}
+                    >
+                        {isDeleting ? (
+                            <>
+                                <span className="spinner-border spinner-border-sm"></span>
+                                <span>Deleting...</span>
+                            </>
                         ) : (
-                            <div 
-                                className={`rounded-3 p-4 d-flex align-items-center justify-content-center h-100 ${taskStatus ? 'bg-success bg-opacity-10' : 'bg-light bg-opacity-50'}`}
-                                style={{ minHeight: '120px' }}
-                            >
-                                <div className="text-center">
-                                    <i className="bi bi-dash-circle display-6 mb-3" style={{
-                                        color: taskStatus ? '#198754' : '#6c757d',
-                                        opacity: 0.5
-                                    }}></i>
-                                    <p 
-                                        className="card-text fst-italic mb-0"
-                                        style={{
-                                            color: taskStatus ? '#6c757d' : '#6c757d',
-                                            opacity: taskStatus ? 0.8 : 1,
-                                            fontSize: '1rem'
-                                        }}
-                                    >
-                                        No description provided
-                                    </p>
-                                </div>
-                            </div>
+                            <>
+                                <i className="bi bi-trash"></i>
+                                <span>Delete</span>
+                            </>
                         )}
-                    </div>
-
-                    {/* Boutons */}
-                    <div className="mt-auto pt-4 border-top">
-                        <div className="row g-3">
-                            <div className="col-6">
-                                <button 
-                                    className={`
-                                        btn 
-                                        w-100 
-                                        d-flex 
-                                        align-items-center 
-                                        justify-content-center 
-                                        ${isHovered ? (taskStatus ? 'btn-success' : 'btn-primary') : (taskStatus ? 'btn-outline-success' : 'btn-outline-primary')}
-                                        transition-all
-                                        py-3
-                                        rounded-3
-                                        fw-medium
-                                        position-relative
-                                        overflow-hidden
-                                    `}
-                                    onClick={handleEdit}
-                                    disabled={isDeleting || isToggling}
-                                    style={{
-                                        fontSize: '1rem'
-                                    }}
-                                >
-                                    <span className="position-relative z-1 d-flex align-items-center">
-                                        <i className="bi bi-pencil-square me-3"></i>
-                                        <span>Edit Task</span>
-                                    </span>
-                                </button>
-                            </div>
-                            <div className="col-6">
-                                <button 
-                                    className={`
-                                        btn 
-                                        w-100 
-                                        d-flex 
-                                        align-items-center 
-                                        justify-content-center 
-                                        ${isHovered ? (taskStatus ? 'btn-outline-success' : 'btn-danger') : (taskStatus ? 'btn-outline-success' : 'btn-outline-danger')}
-                                        transition-all
-                                        py-3
-                                        rounded-3
-                                        fw-medium
-                                        position-relative
-                                        overflow-hidden
-                                    `}
-                                    onClick={handleDelete}
-                                    disabled={isDeleting || isToggling}
-                                    style={{
-                                        fontSize: '1rem'
-                                    }}
-                                >
-                                    <span className="position-relative z-1 d-flex align-items-center">
-                                        {isDeleting ? (
-                                            <>
-                                                <span className="spinner-border spinner-border-sm me-3"></span>
-                                                <span>Deleting...</span>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <i className="bi bi-trash me-3"></i>
-                                                <span>Remove</span>
-                                            </>
-                                        )}
-                                    </span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                    </button>
                 </div>
             </div>
         </div>
@@ -491,155 +313,242 @@ if (typeof window !== 'undefined') {
     window.showToast = showToast;
 }
 
-// Styles CSS pour le toggle parfait
+// Styles CSS optimisés pour mobile
 const cardStyles = `
-/* Cartes larges et bien espacées */
-.task-card-item {
-    border-radius: 15px !important;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
-
-/* Grille élargie */
-.row.g-4 > [class*="col-"] {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
-    margin-bottom: 2.5rem !important;
-}
-
-.row.g-4 {
-    margin-left: -1.5rem;
-    margin-right: -1.5rem;
-}
-
-/* TOGGLE SWITCH - DESIGN PARFAIT */
-.toggle-wrapper {
+/* === CARD PRINCIPALE === */
+.task-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    padding: 1.25rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
     position: relative;
-    display: inline-block;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
 }
 
-.toggle-spinner {
+.task-card.completed {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    border-color: #86efac;
+}
+
+.task-card.deleting {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* === HEADER === */
+.task-card-header {
+    margin-bottom: 1rem;
+}
+
+/* Toggle Switch */
+.task-toggle {
+    margin-bottom: 1rem;
+}
+
+.task-toggle .form-check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: auto;
+}
+
+.task-toggle .form-check-input {
+    width: 3rem;
+    height: 1.5rem;
+    cursor: pointer;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.task-toggle .form-check-input:checked {
+    background-color: #22c55e;
+    border-color: #22c55e;
+}
+
+.task-toggle .form-check-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #64748b;
+    margin: 0;
+    cursor: pointer;
+}
+
+.task-card.completed .form-check-label {
+    color: #16a34a;
+}
+
+/* Titre */
+.task-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 0.75rem 0;
+    line-height: 1.4;
+    word-wrap: break-word;
+}
+
+.task-card.completed .task-title {
+    color: #16a34a;
+    text-decoration: line-through;
+    opacity: 0.8;
+}
+
+/* Date */
+.task-date {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #64748b;
+}
+
+.task-date i {
+    font-size: 0.875rem;
+}
+
+/* === DESCRIPTION === */
+.task-description {
+    flex: 1;
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+.task-description p {
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: #475569;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.task-card.completed .task-description p {
+    color: #16a34a;
+    text-decoration: line-through;
+    opacity: 0.7;
+}
+
+/* === ACTIONS === */
+.task-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-top: auto;
+}
+
+.btn-task {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 44px;
+}
+
+.btn-task:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-task i {
+    font-size: 1rem;
+}
+
+/* Bouton Edit */
+.btn-edit {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-edit:hover:not(:disabled) {
+    background: #2563eb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.btn-edit.btn-success {
+    background: #22c55e;
+}
+
+.btn-edit.btn-success:hover:not(:disabled) {
+    background: #16a34a;
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
+}
+
+/* Bouton Delete */
+.btn-delete {
+    background: #ef4444;
+    color: white;
+}
+
+.btn-delete:hover:not(:disabled) {
+    background: #dc2626;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+/* === BADGE DE STATUT === */
+.task-status-badge {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 3;
-}
-
-.toggle-spinner .spinner-border {
-    width: 1rem;
-    height: 1rem;
-    border-width: 0.15em;
-}
-
-/* Toggle switch personnalisé */
-.form-check-input {
-    cursor: pointer !important;
-    transition: all 0.3s ease !important;
-    position: relative;
+    top: 1rem;
+    right: 1rem;
+    width: 32px;
+    height: 32px;
+    background: #22c55e;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1rem;
     z-index: 2;
+    animation: badgePop 0.4s ease-out;
 }
 
-/* Toggle OFF state */
-.form-check-input:not(:checked) {
-    background-color: #e9ecef !important;
-    border-color: #adb5bd !important;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e") !important;
-}
-
-/* Toggle ON state */
-.form-check-input:checked {
-    background-color: #198754 !important;
-    border-color: #198754 !important;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e") !important;
-}
-
-/* Focus state amélioré */
-.form-check-input:focus {
-    border-color: #198754 !important;
-    outline: none;
-    box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25) !important;
-}
-
-.form-check-input:not(:checked):focus {
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
-    border-color: #0d6efd !important;
-}
-
-/* Animation du toggle */
-@keyframes toggleSlide {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(100%); }
-}
-
-@keyframes toggleOn {
-    0% { 
+@keyframes badgePop {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
         transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(25, 135, 84, 0.4);
-    }
-    50% { 
-        transform: scale(1.1);
-        box-shadow: 0 0 0 8px rgba(25, 135, 84, 0.2);
-    }
-    100% { 
-        transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(25, 135, 84, 0);
+        opacity: 1;
     }
 }
 
-@keyframes toggleOff {
-    0% { 
-        transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(13, 110, 253, 0.4);
-    }
-    50% { 
-        transform: scale(1.1);
-        box-shadow: 0 0 0 8px rgba(13, 110, 253, 0.2);
-    }
-    100% { 
-        transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(13, 110, 253, 0);
-    }
-}
-
-.form-check-input:checked {
-    animation: toggleOn 0.5s ease;
-}
-
-.form-check-input:not(:checked):active {
-    animation: toggleOff 0.3s ease;
-}
-
-/* Label du toggle */
-.toggle-label {
-    font-size: 0.75rem;
-    font-weight: 600 !important;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    color: #6c757d !important;
-    transition: color 0.3s ease;
-}
-
-.toggle-container:hover .toggle-label {
-    color: #495057 !important;
-}
-
-/* Effet de complétion visuel */
-.completion-overlay {
+/* === EFFET DE COMPLÉTION === */
+.completion-effect {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(45deg, rgba(25, 135, 84, 0.1), rgba(32, 201, 151, 0.1));
+    background: radial-gradient(circle at center, rgba(34, 197, 94, 0.3), transparent);
     z-index: 1;
-    animation: completionFlash 1s ease-out;
+    animation: completionPulse 0.8s ease-out;
     pointer-events: none;
 }
 
-@keyframes completionFlash {
+@keyframes completionPulse {
     0% {
         opacity: 0;
-        transform: scale(0.95);
+        transform: scale(0.8);
     }
     50% {
         opacity: 1;
@@ -647,106 +556,84 @@ const cardStyles = `
     }
     100% {
         opacity: 0;
-        transform: scale(1);
+        transform: scale(1.2);
     }
 }
 
-/* Badge de complétion */
-.completion-badge {
-    animation: badgeAppear 0.5s ease-out;
-}
-
-@keyframes badgeAppear {
-    0% {
+/* === TOAST === */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
         opacity: 0;
-        transform: translateY(-10px) scale(0.8);
     }
-    100% {
+    to {
+        transform: translateX(0);
         opacity: 1;
-        transform: translateY(0) scale(1);
     }
 }
 
-/* Effet hover amélioré */
-.task-card-item:hover {
-    transform: translateY(-6px) scale(1.02) !important;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15) !important;
+.toast {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-radius: 12px;
+    border: none;
 }
 
-.task-card-item.completed-task:hover {
-    box-shadow: 0 15px 35px rgba(25, 135, 84, 0.15) !important;
+/* === RESPONSIVE === */
+@media (max-width: 576px) {
+    .task-card {
+        padding: 1rem;
+    }
+    
+    .task-title {
+        font-size: 1.125rem;
+    }
+    
+    .task-description p {
+        font-size: 0.875rem;
+        -webkit-line-clamp: 3;
+    }
+    
+    .btn-task {
+        font-size: 0.875rem;
+        padding: 0.625rem;
+    }
+    
+    .btn-task span {
+        display: none;
+    }
+    
+    .btn-task i {
+        font-size: 1.125rem;
+    }
+    
+    .task-actions {
+        gap: 0.5rem;
+    }
+    
+    .toast {
+        left: 10px !important;
+        right: 10px !important;
+        top: 10px !important;
+        min-width: auto !important;
+        max-width: calc(100% - 20px) !important;
+    }
 }
 
-/* Cartes complétées */
-.task-card-item.completed-task {
-    border: 3px solid rgba(25, 135, 84, 0.4) !important;
-    background-color: rgba(25, 135, 84, 0.03) !important;
+@media (min-width: 577px) and (max-width: 768px) {
+    .task-card {
+        padding: 1.125rem;
+    }
 }
 
-/* Barre supérieure */
-.task-card-item::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 6px;
-    border-radius: 15px 15px 0 0;
-    background: linear-gradient(90deg, #0d6efd, #0dcaf0);
-    opacity: 0.9;
-    transition: opacity 0.3s ease;
-    z-index: 1;
+/* Amélioration tactile */
+@media (hover: none) {
+    .btn-task:active:not(:disabled) {
+        transform: scale(0.95);
+    }
 }
 
-.task-card-item.completed-task::before {
-    background: linear-gradient(90deg, #198754, #20c997);
-}
-
-.task-card-item:hover::before {
-    opacity: 1;
-}
-
-/* Scrollbar */
-.description-scroll {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
-}
-
-.description-scroll::-webkit-scrollbar {
-    width: 6px;
-}
-
-.description-scroll::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.05);
-    border-radius: 10px;
-}
-
-.description-scroll::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 10px;
-}
-
-/* Boutons */
-.btn.rounded-3 {
-    border-radius: 12px !important;
-    transition: all 0.2s ease-in-out !important;
-}
-
-.btn:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1) !important;
-}
-
-/* Badge */
-.badge.rounded-pill {
-    font-size: 0.8rem;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* Animation d'entrée */
-@keyframes cardSlideIn {
+/* === ANIMATIONS D'ENTRÉE === */
+@keyframes cardFadeIn {
     from {
         opacity: 0;
         transform: translateY(20px);
@@ -757,99 +644,17 @@ const cardStyles = `
     }
 }
 
-.task-card-item {
-    animation: cardSlideIn 0.5s ease-out;
+.task-card {
+    animation: cardFadeIn 0.4s ease-out;
 }
 
-/* Toast */
-@keyframes slideInRight {
-    from {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-.toast {
-    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-    border-radius: 12px;
-    border: none;
-}
-
-.toast.show {
-    animation: slideInRight 0.4s ease-out;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .row.g-4 > [class*="col-"] {
-        padding-left: 1rem;
-        padding-right: 1rem;
-        margin-bottom: 2rem !important;
-    }
-    
-    .row.g-4 {
-        margin-left: -1rem;
-        margin-right: -1rem;
-    }
-    
-    .form-check-input {
-        width: 2.8em !important;
-        height: 1.5em !important;
-    }
-    
-    .toggle-label {
-        font-size: 0.7rem;
-    }
-}
-
-@media (min-width: 1200px) {
-    .col-xl-4 {
-        flex: 0 0 auto;
-        width: 33.33333333%;
-    }
-}
-
-/* Indicateur de chargement du toggle */
-.toggle-wrapper.loading .form-check-input {
-    opacity: 0.5;
-}
-
-/* Z-index pour empilement correct */
-.position-relative.z-2 {
-    z-index: 2;
-}
-
-/* Texte barré pour les tâches complétées */
-.completed-task .card-title,
-.completed-task .card-text {
-    position: relative;
-}
-
-.completed-task .card-title::after,
-.completed-task .card-text::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: rgba(25, 135, 84, 0.3);
-    transform: translateY(-50%);
-    animation: lineThrough 0.5s ease-out;
-}
-
-@keyframes lineThrough {
-    from {
-        transform: translateY(-50%) scaleX(0);
-    }
-    to {
-        transform: translateY(-50%) scaleX(1);
-    }
-}
+/* Stagger animation pour les cartes */
+.task-card:nth-child(1) { animation-delay: 0s; }
+.task-card:nth-child(2) { animation-delay: 0.1s; }
+.task-card:nth-child(3) { animation-delay: 0.2s; }
+.task-card:nth-child(4) { animation-delay: 0.3s; }
+.task-card:nth-child(5) { animation-delay: 0.4s; }
+.task-card:nth-child(6) { animation-delay: 0.5s; }
 `;
 
 // Injectez les styles
