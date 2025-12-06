@@ -76,7 +76,7 @@ function showToast(message, type = 'success') {
     }, type === 'success' ? 2500 : 4500);
 }
 
-// Main TaskCard Component - Design moderne amélioré
+// Main TaskCard Component - Avec affichage de l'heure
 function TaskCard({ task, onDelete, onToggle }) {
     const [isDeleting, setIsDeleting] = React.useState(false);
     const [isToggling, setIsToggling] = React.useState(false);
@@ -152,7 +152,6 @@ function TaskCard({ task, onDelete, onToggle }) {
         setIsToggling(true);
         const newStatus = !taskStatus;
         
-        // Effet visuel immédiat
         if (newStatus) {
             setShowCompletionEffect(true);
             setTimeout(() => setShowCompletionEffect(false), 1000);
@@ -217,6 +216,20 @@ function TaskCard({ task, onDelete, onToggle }) {
         }
     };
 
+    const formatTime = (timeString) => {
+        if (!timeString) return null;
+        try {
+            // timeString est au format "HH:MM"
+            const [hours, minutes] = timeString.split(':');
+            const hour = parseInt(hours);
+            const ampm = hour >= 12 ? 'PM' : 'AM';
+            const displayHour = hour % 12 || 12;
+            return `${displayHour}:${minutes} ${ampm}`;
+        } catch {
+            return timeString;
+        }
+    };
+
     return (
         <div className="col-12 col-sm-6 col-xl-4 mb-4">
             <div 
@@ -270,10 +283,20 @@ function TaskCard({ task, onDelete, onToggle }) {
                         {task.title}
                     </h5>
                     
-                    {/* Date avec design amélioré */}
-                    <div className="task-date-modern">
-                        <i className="bi bi-calendar-event"></i>
-                        <span>{formatDate(task.created_at)}</span>
+                    {/* Date et Heure avec design amélioré */}
+                    <div className="task-meta-info">
+                        <div className="task-date-modern">
+                            <i className="bi bi-calendar-event"></i>
+                            <span>{formatDate(task.created_at)}</span>
+                        </div>
+                        
+                        {/* Affichage de l'heure de la tâche - NOUVEAU */}
+                        {task.task_time && (
+                            <div className="task-time-modern">
+                                <i className="bi bi-alarm"></i>
+                                <span>{formatTime(task.task_time)}</span>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -332,7 +355,7 @@ if (typeof window !== 'undefined') {
     window.showToast = showToast;
 }
 
-// Styles CSS modernes et proportionnés
+// Styles CSS modernes avec l'heure
 const cardStyles = `
 /* === CARD PRINCIPALE - DESIGN MODERNE === */
 .task-card-modern {
@@ -490,6 +513,14 @@ const cardStyles = `
     color: #22c55e;
 }
 
+/* === META INFO (Date + Heure) - NOUVEAU === */
+.task-meta-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
 /* Date moderne */
 .task-date-modern {
     display: inline-flex;
@@ -509,6 +540,35 @@ const cardStyles = `
     color: #94a3b8;
 }
 
+/* Heure de tâche - NOUVEAU */
+.task-time-modern {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem 0.75rem;
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-radius: 8px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #92400e;
+    border: 1px solid #fbbf24;
+    animation: pulseTime 2s ease-in-out infinite;
+}
+
+.task-time-modern i {
+    font-size: 0.875rem;
+    color: #d97706;
+}
+
+@keyframes pulseTime {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 0 4px rgba(251, 191, 36, 0);
+    }
+}
+
 /* === DESCRIPTION MODERNE === */
 .task-description-modern {
     flex: 1;
@@ -518,7 +578,6 @@ const cardStyles = `
     padding-right: 0.5rem;
 }
 
-/* Scrollbar personnalisée */
 .task-description-modern::-webkit-scrollbar {
     width: 6px;
 }
@@ -620,7 +679,6 @@ const cardStyles = `
     z-index: 1;
 }
 
-/* Bouton Edit */
 .btn-edit-modern {
     background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
     color: white;
@@ -637,7 +695,6 @@ const cardStyles = `
     transform: translateY(-1px);
 }
 
-/* Bouton Delete */
 .btn-delete-modern {
     background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
     color: white;
@@ -715,6 +772,16 @@ const cardStyles = `
         font-size: 1.125rem;
     }
     
+    .task-meta-info {
+        gap: 0.375rem;
+    }
+    
+    .task-date-modern,
+    .task-time-modern {
+        font-size: 0.75rem;
+        padding: 0.3rem 0.6rem;
+    }
+    
     .task-description-modern {
         max-height: 100px;
     }
@@ -780,7 +847,6 @@ const cardStyles = `
     }
 }
 
-/* Amélioration tactile */
 @media (hover: none) {
     .btn-action:active:not(:disabled) {
         transform: scale(0.95);
@@ -807,7 +873,6 @@ const cardStyles = `
     animation: cardFadeIn 0.5s ease-out backwards;
 }
 
-/* Stagger animation pour les cartes */
 .task-card-modern:nth-child(1) { animation-delay: 0s; }
 .task-card-modern:nth-child(2) { animation-delay: 0.1s; }
 .task-card-modern:nth-child(3) { animation-delay: 0.2s; }
@@ -818,7 +883,6 @@ const cardStyles = `
 .task-card-modern:nth-child(8) { animation-delay: 0.7s; }
 .task-card-modern:nth-child(9) { animation-delay: 0.8s; }
 
-/* === ÉTATS DE FOCUS POUR ACCESSIBILITÉ === */
 .custom-toggle input:focus + label {
     outline: 2px solid #3b82f6;
     outline-offset: 2px;
@@ -829,7 +893,6 @@ const cardStyles = `
     outline-offset: 2px;
 }
 
-/* === DARK MODE READY === */
 @media (prefers-color-scheme: dark) {
     .task-card-modern {
         background: #1e293b;

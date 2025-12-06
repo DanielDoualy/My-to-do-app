@@ -40,6 +40,20 @@
                             <small class="form-text text-muted">Optional - Add additional details</small>
                         </div>
 
+                        <!-- Task Time Field - NOUVEAU -->
+                        <div class="mb-4">
+                            <label for="taskTime" class="form-label fw-bold">
+                                <i class="bi bi-clock"></i> Task Time
+                            </label>
+                            <input 
+                                type="time" 
+                                class="form-control form-control-lg" 
+                                id="taskTime" 
+                                name="task_time"
+                                value="{{ task.task_time|time:'H:i' }}">
+                            <small class="form-text text-muted">Optional - Choose when you plan to do this task</small>
+                        </div>
+
                         <!-- Task Info -->
                         <div class="alert alert-info mb-4">
                             <small>
@@ -61,7 +75,7 @@
                 </div>
             </div>
 
-            <!-- Delete Section - SUPPRESSION DIRECTE -->
+            <!-- Delete Section -->
             <div class="card shadow-sm border-danger mt-4">
                 <div class="card-body p-4">
                     <h5 class="card-title text-danger mb-3">

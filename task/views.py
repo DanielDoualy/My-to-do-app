@@ -8,7 +8,7 @@ from django.db import IntegrityError
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_http_methods
 import json
-
+from datetime import datetime
 
 from .models import *
 
@@ -19,12 +19,10 @@ def index(request):
 
 # register view
 def register_view(request):
-    # le cas ou l'utilisateur soumet ces informations dans le formulaire 
     if request.method == "POST":
         username = request.POST["username"]
         email = request.POST["email"]
         
-        # Ensure password matches confirmation
         password = request.POST["password"]
         confirmation = request.POST["confirmation"]
         
@@ -33,7 +31,6 @@ def register_view(request):
                 "message": "Passwords must match."
             })
 
-        # Attempt to create new user
         try:
             user = User.objects.create_user(username, email, password)
             user.save()
@@ -50,13 +47,10 @@ def register_view(request):
 # login view
 def login_view(request):
     if request.method == "POST":
-
-        # Attempt to sign user in
         username = request.POST["username"]
         password = request.POST["password"]
         user = authenticate(request, username=username, password=password)
 
-        # Check if authentication successful
         if user is not None:
             login(request, user)
             return HttpResponseRedirect(reverse("index"))
@@ -77,22 +71,24 @@ def logout_view(request):
 @login_required
 @ensure_csrf_cookie
 def task_view(request):
-    """ Recuperer les valeurs entrer dans le formulaire de la to-do-list
-    et les stocker dans les variables une fois le formulaire soumis"""
-    
     if request.method == "POST":
         title = request.POST["title"]
         description = request.POST["description"]
+        task_time = request.POST.get("task_time")  # NOUVEAU
         user = request.user
         
-        task = Task(title=title, description=description, user=user)
+        # Créer la tâche avec l'heure si fournie
+        task = Task(
+            title=title, 
+            description=description, 
+            user=user,
+            task_time=task_time if task_time else None
+        )
         task.save()
         
-        # Rediriger vers la même page pour afficher la liste
         return HttpResponseRedirect(reverse("task"))
     
     else:
-        # Afficher la liste des tâches en GET
         task_list = Task.objects.filter(user=request.user).order_by('-id')
         
         return render(request, "task/task_list.html", {
@@ -102,17 +98,22 @@ def task_view(request):
 
 @login_required
 def edit_task(request, task_id):
-    """Modifier une tâche existante"""
     try:
-        # Vérifier que la tâche existe ET appartient à l'utilisateur
         task = get_object_or_404(Task, id=task_id, user=request.user)
     except Http404:
-        # Si la tâche n'existe pas, rediriger vers la liste
         return HttpResponseRedirect(reverse("task"))
     
     if request.method == "POST":
         task.title = request.POST.get("title", task.title)
         task.description = request.POST.get("description", task.description)
+        task_time = request.POST.get("task_time")  # NOUVEAU
+        
+        # Mettre à jour l'heure
+        if task_time:
+            task.task_time = task_time
+        else:
+            task.task_time = None
+            
         task.save()
         return HttpResponseRedirect(reverse("task"))
     
@@ -122,14 +123,12 @@ def edit_task(request, task_id):
 
 @login_required
 def delete_task(request, task_id):
-    """Supprimer une tâche"""
     if request.method == "POST":
         try:
-            # Vérifier que la tâche existe ET appartient à l'utilisateur
             task = get_object_or_404(Task, id=task_id, user=request.user)
             task.delete()
         except Http404:
-            pass  # Si la tâche n'existe pas, ignorer
+            pass
     
     return HttpResponseRedirect(reverse("task"))
 
@@ -141,42 +140,54 @@ def delete_task(request, task_id):
 def api_tasks(request):
     """API pour lister ou créer des tâches"""
     if request.method == "GET":
-        # Récupérer toutes les tâches de l'utilisateur
         tasks = Task.objects.filter(user=request.user).order_by('-created_at')
         
-        # Formater les données pour React
         tasks_data = []
         for task in tasks:
             tasks_data.append({
                 'id': task.id,
                 'title': task.title,
                 'description': task.description,
-                'created_at': task.created_at.isoformat(),  # Format ISO pour JavaScript
-                'completed': False  # Si vous n'avez pas ce champ dans le modèle
+                'created_at': task.created_at.isoformat(),
+                'status': task.status,
+                'task_time': task.task_time.strftime('%H:%M') if task.task_time else None  # NOUVEAU
             })
         
         return JsonResponse({'tasks': tasks_data})
 
     elif request.method == "POST":
         data = json.loads(request.body)
+        
+        # Gérer le champ task_time
+        task_time = data.get('task_time')
+        if task_time:
+            try:
+                # Convertir la chaîne en objet time
+                task_time = datetime.strptime(task_time, '%H:%M').time()
+            except:
+                task_time = None
+        
         task = Task.objects.create(
             title=data.get('title', ''),
             description=data.get('description', ''),
-            user=request.user
+            user=request.user,
+            status=False,
+            task_time=task_time  # NOUVEAU
         )
         return JsonResponse({
             "task": {
                 "id": task.id,
                 "title": task.title,
                 "description": task.description,
-                "created_at": task.created_at.isoformat()
+                "created_at": task.created_at.isoformat(),
+                "status": task.status,
+                "task_time": task.task_time.strftime('%H:%M') if task.task_time else None  # NOUVEAU
             }
         })
 
 
 @login_required
 def api_task_delete(request, task_id):
-    """API pour supprimer une tâche"""
     if request.method == "DELETE":
         try:
             task = get_object_or_404(Task, id=task_id, user=request.user)
@@ -190,7 +201,6 @@ def api_task_delete(request, task_id):
 
 @login_required
 def api_task_update(request, task_id):
-    """API pour mettre à jour une tâche"""
     if request.method in ["PUT", "PATCH"]:
         try:
             task = get_object_or_404(Task, id=task_id, user=request.user)
@@ -198,6 +208,18 @@ def api_task_update(request, task_id):
             
             task.title = data.get("title", task.title)
             task.description = data.get("description", task.description)
+            
+            # Gérer le champ task_time
+            if 'task_time' in data:
+                task_time = data.get('task_time')
+                if task_time:
+                    try:
+                        task.task_time = datetime.strptime(task_time, '%H:%M').time()
+                    except:
+                        pass
+                else:
+                    task.task_time = None
+            
             task.save()
             
             return JsonResponse({
@@ -206,7 +228,8 @@ def api_task_update(request, task_id):
                     "id": task.id,
                     "title": task.title,
                     "description": task.description,
-                    "created_at": task.created_at.isoformat()
+                    "created_at": task.created_at.isoformat(),
+                    "task_time": task.task_time.strftime('%H:%M') if task.task_time else None  # NOUVEAU
                 }
             })
         except Http404:
@@ -217,12 +240,10 @@ def api_task_update(request, task_id):
 
 @login_required
 def api_task_toggle(request, task_id):
-    """API pour basculer le statut de complétion d'une tâche"""
     if request.method in ["PUT", "PATCH", "POST"]:
         try:
             task = get_object_or_404(Task, id=task_id, user=request.user)
             
-            # Basculer le statut
             task.status = not task.status
             task.save()
             
@@ -233,50 +254,11 @@ def api_task_toggle(request, task_id):
                     "title": task.title,
                     "description": task.description,
                     "created_at": task.created_at.isoformat(),
-                    "status": task.status
+                    "status": task.status,
+                    "task_time": task.task_time.strftime('%H:%M') if task.task_time else None  # NOUVEAU
                 }
             })
         except Http404:
             return JsonResponse({"success": False, "error": "Task not found"}, status=404)
     
     return JsonResponse({"error": "Invalid request method"}, status=400)
-
-# Modifiez aussi api_tasks pour inclure le statut
-@login_required
-@ensure_csrf_cookie
-def api_tasks(request):
-    """API pour lister ou créer des tâches"""
-    if request.method == "GET":
-        # Récupérer toutes les tâches de l'utilisateur
-        tasks = Task.objects.filter(user=request.user).order_by('-created_at')
-        
-        # Formater les données pour React
-        tasks_data = []
-        for task in tasks:
-            tasks_data.append({
-                'id': task.id,
-                'title': task.title,
-                'description': task.description,
-                'created_at': task.created_at.isoformat(),
-                'status': task.status  # AJOUTEZ CE CHAMP
-            })
-        
-        return JsonResponse({'tasks': tasks_data})
-
-    elif request.method == "POST":
-        data = json.loads(request.body)
-        task = Task.objects.create(
-            title=data.get('title', ''),
-            description=data.get('description', ''),
-            user=request.user,
-            status=False  # Nouvelle tâche non complétée par défaut
-        )
-        return JsonResponse({
-            "task": {
-                "id": task.id,
-                "title": task.title,
-                "description": task.description,
-                "created_at": task.created_at.isoformat(),
-                "status": task.status
-            }
-        })
